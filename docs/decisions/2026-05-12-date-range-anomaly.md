@@ -40,3 +40,21 @@ directory.
 A short paragraph in the methodology note will describe the date-range
 audit procedure and the resolution agreed with Barb, so that the final
 deliverable is transparent about how out-of-range dates were handled.
+
+## Status update — 2026-05-17
+
+Barb replied on 2026-05-15 acknowledging the date-range anomaly and
+identifying the three specific rows responsible for the out-of-range
+dates. The corrections are:
+
+- Row 2793: year should be 2022 (not the value originally entered)
+- Row 5183: year should be 2025 (not the value originally entered)
+- Row 6498: year should be 2020 (not the value originally entered)
+
+Barb will provide an updated workbook in time for the 19 May meeting,
+which will also include the missing 2025 Umebosi observations and any
+revisions to the Shackleton Ice Shelf sheet. The ingestion pipeline will
+be re-run against the updated workbook once it is in hand, at which
+point this issue will be considered resolved. The methodology note will
+document the audit procedure and the corrected source dataset as the
+authoritative version.

@@ -140,6 +140,11 @@ print(f"Total observations in 'other' or null categories: "
 
 # %% [markdown]
 # ## 7. Circumpolar visualisation
+#
+# Rendered at 50m Natural Earth resolution for accurate colony placement
+# relative to the actual coast, following feedback from Barb that the
+# Umebosi colony at approximately 68.05S 43.08E should appear close to
+# the coastline rather than offshore.
 
 # %%
 obs_summary = (
@@ -168,13 +173,28 @@ print(f"Record duration range: "
       f"{obs_summary['record_duration_years'].max():.1f} years")
 
 # %%
+COASTLINE_RESOLUTION = "50m"
+
+land_50m = cfeature.NaturalEarthFeature(
+    category="physical", name="land", scale=COASTLINE_RESOLUTION,
+    edgecolor="none", facecolor="#e8e4d8",
+)
+ocean_50m = cfeature.NaturalEarthFeature(
+    category="physical", name="ocean", scale=COASTLINE_RESOLUTION,
+    edgecolor="none", facecolor="#cfe2ef",
+)
+coastline_50m = cfeature.NaturalEarthFeature(
+    category="physical", name="coastline", scale=COASTLINE_RESOLUTION,
+    edgecolor="#5a6678", facecolor="none", linewidth=0.6,
+)
+
 fig = plt.figure(figsize=(11, 11), dpi=120)
 ax = plt.axes(projection=ccrs.SouthPolarStereo())
 ax.set_extent([-180, 180, -90, -55], crs=ccrs.PlateCarree())
 
-ax.add_feature(cfeature.LAND, facecolor="#e8e4d8", edgecolor="none")
-ax.add_feature(cfeature.OCEAN, facecolor="#cfe2ef", edgecolor="none")
-ax.add_feature(cfeature.COASTLINE, linewidth=0.6, edgecolor="#5a6678")
+ax.add_feature(land_50m)
+ax.add_feature(ocean_50m)
+ax.add_feature(coastline_50m)
 ax.gridlines(
     draw_labels=False, linewidth=0.4, color="#9aa6b8",
     alpha=0.5, linestyle="--",

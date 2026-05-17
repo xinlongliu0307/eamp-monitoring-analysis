@@ -44,3 +44,16 @@ directory.
 The methodology note will describe the harmonisation procedure including
 the canonical category mapping, the rationale for each grouping, and the
 treatment of typographical and ambiguous variants.
+
+## Status update — 2026-05-17
+
+Barb replied on 2026-05-15 acknowledging the surface-type heterogeneity
+and confirming that she used the comments column as a working aide-memoire
+rather than a controlled vocabulary. She thanked the team for proposing
+consistent descriptors. The five priority categories proposed in the
+mid-fortnight email (fast_ice, ice_floe, iceberg, glacier_ice, ice_shelf)
+have not yet been explicitly endorsed and will be confirmed at the
+19 May fortnightly meeting before being committed to the harmonisation
+rules in src/eamp/penguin/harmonise.py. The methodology note will
+document the categorisation and Barb's confirmation as the basis for the
+canonical mapping in the consolidated dataset.
