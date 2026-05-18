@@ -88,3 +88,49 @@ def write_processed(
     df.to_excel(excel_path, index=False, engine="openpyxl")
 
     return parquet_path, excel_path
+
+
+def overlay_supplementary_sheets(
+    sheets: dict[str, pd.DataFrame],
+    supplements: dict[str, Path],
+    name_mapping: Optional[dict[str, str]] = None,
+) -> dict[str, pd.DataFrame]:
+    """Overlay supplementary single-sheet workbooks onto the main sheets dict.
+
+    Each supplementary file is read and its sheet replaces the corresponding
+    entry in the main dictionary. The optional name_mapping handles the case
+    where the supplementary sheet name differs from the canonical sheet name
+    in the main workbook (e.g. '1.Umebosi' in the supplement vs '1. Umebosi'
+    in the original).
+
+    Parameters
+    ----------
+    sheets
+        The dictionary returned by load_observations_workbook.
+    supplements
+        Mapping of canonical sheet name (as used in the main workbook) to the
+        path of the supplementary single-sheet workbook providing the
+        replacement data.
+    name_mapping
+        Optional mapping from the canonical sheet name (key in supplements)
+        to the actual sheet name inside the supplementary file, when the two
+        differ.
+
+    Returns
+    -------
+    dict[str, pd.DataFrame]
+        The updated sheets dictionary with supplementary content overlaid.
+    """
+    name_mapping = name_mapping or {}
+    updated = dict(sheets)
+    for canonical_name, supp_path in supplements.items():
+        supp_sheet_name = name_mapping.get(canonical_name, canonical_name)
+        logger.info(
+            "Overlaying supplement %s -> sheet %r from %s",
+            canonical_name, supp_sheet_name, supp_path.name,
+        )
+        supp = pd.read_excel(
+            supp_path, sheet_name=supp_sheet_name, engine="openpyxl"
+        )
+        updated[canonical_name] = supp
+    return updated
