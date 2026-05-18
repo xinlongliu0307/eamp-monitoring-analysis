@@ -158,9 +158,62 @@ def write_quality_audit_report(
     """Write a multi-sheet Excel report consolidating all quality audits."""
     coast = coast_distance_audit(df)
     dates = date_range_audit(df)
+    consistency = coordinate_consistency_audit(df)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
         coast.to_excel(writer, sheet_name="coast_distance", index=False)
         dates.to_excel(writer, sheet_name="date_range", index=False)
+        consistency.to_excel(writer, sheet_name="coord_consistency", index=False)
     logger.info("Quality audit report written: %s", output_path)
+
+
+COORDINATE_DIVERGENCE_THRESHOLD_KM = 5.0
+
+
+def coordinate_consistency_audit(
+    df: pd.DataFrame,
+    threshold_km: float = COORDINATE_DIVERGENCE_THRESHOLD_KM,
+) -> pd.DataFrame:
+    """Flag colonies whose mean and median coordinates diverge meaningfully.
+
+    Under normal circumstances the mean and median of a colony's per-observation
+    coordinates differ by only a few hundred metres. A divergence of more than
+    `threshold_km` indicates that one or more outlier observations are pulling
+    the mean away from the median, which is the signature of a coordinate
+    transposition, missing sign, or magnitude entry error.
+    """
+    grouped = (
+        df.dropna(subset=["latitude", "longitude"])
+        .groupby("colony_name")
+        .agg(
+            n_observations=("latitude", "size"),
+            lat_mean=("latitude", "mean"),
+            lat_median=("latitude", "median"),
+            lon_mean=("longitude", "mean"),
+            lon_median=("longitude", "median"),
+        )
+        .reset_index()
+    )
+
+    if grouped.empty:
+        logger.warning("coordinate_consistency_audit: no coordinates to audit")
+        return pd.DataFrame(columns=[
+            "colony_name", "n_observations",
+            "lat_mean", "lat_median", "lon_mean", "lon_median",
+            "divergence_km", "flagged",
+        ])
+
+    grouped["divergence_km"] = _haversine_km(
+        grouped["lat_mean"], grouped["lon_mean"],
+        grouped["lat_median"], grouped["lon_median"],
+    )
+    grouped["flagged"] = grouped["divergence_km"] > threshold_km
+
+    grouped = grouped.sort_values("divergence_km", ascending=False).reset_index(drop=True)
+    n_flagged = int(grouped["flagged"].sum())
+    logger.info(
+        "coordinate_consistency_audit: %d of %d colonies with mean-median divergence > %.1f km",
+        n_flagged, len(grouped), threshold_km,
+    )
+    return grouped
