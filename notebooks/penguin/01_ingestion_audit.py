@@ -150,8 +150,8 @@ print(f"Total observations in 'other' or null categories: "
 obs_summary = (
     obs.groupby("colony_name")
     .agg(
-        latitude=("latitude", "mean"),
-        longitude=("longitude", "mean"),
+        latitude=("latitude", "median"),
+        longitude=("longitude", "median"),
         n_observations=("observation_date", "size"),
         first_observation=("observation_date", "min"),
         last_observation=("observation_date", "max"),
