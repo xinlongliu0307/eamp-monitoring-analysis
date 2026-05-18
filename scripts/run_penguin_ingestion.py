@@ -32,7 +32,7 @@ logger = get_logger("run_penguin_ingestion")
 # sheet schema.
 SUPPLEMENTS_DIR = config.PENGUIN_RAW / "barb_2026-05-18"
 SUPPLEMENTS = {
-    "1. Umebosi": SUPPLEMENTS_DIR / "Umebosi_20260518.xlsx",
+    "1. Umebosi": SUPPLEMENTS_DIR / "Umebosi_updated_20260518.xlsx",
     "16. Shackelton Ice Shelf": SUPPLEMENTS_DIR / "Shackleton_20260518.xlsx",
 }
 SUPPLEMENT_SHEET_NAMES = {
