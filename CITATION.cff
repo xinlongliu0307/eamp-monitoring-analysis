@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: EAMP Monitoring Analysis
+message: >-
+  Data analysis and pipeline development for the East Antarctic
+  Monitoring Program (EAMP), Australian Antarctic Division.
+type: software
+authors:
+  - given-names: Xinlong
+    family-names: Liu
+    affiliation: IMAS, University of Tasmania
+    role: Data analysis and pipeline development
+  - given-names: Patricia
+    family-names: Miloslavich
+    affiliation: Australian Antarctic Division
+    role: Program Lead and supervisor
+  - given-names: Barbara
+    family-names: Wienecke
+    affiliation: Australian Antarctic Division
+    role: Emperor penguin science lead and supervisor

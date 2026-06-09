@@ -25,3 +25,14 @@ resupply voyages (Workstream B).
 - docs/working_log.md — running session journal
 - docs/decisions/ — analytical and engineering decision records
 - outputs/reports/methodology_note/ — final methodology note
+
+## Project leadership and supervision
+
+This work is carried out as part of the East Antarctic Monitoring Program
+(EAMP) at the Australian Antarctic Division, under the scientific leadership
+and supervision of:
+
+- **Dr Patricia Miloslavich** — Program Lead, EAMP (Australian Antarctic Division)
+- **Dr Barbara Wienecke** — Emperor penguin science lead (Australian Antarctic Division)
+
+Data analysis and pipeline development by **Xinlong Liu**.
