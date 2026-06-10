@@ -80,11 +80,31 @@ def load_voyage_wide(path: Path) -> pd.DataFrame | None:
     for canon in PRIORITY_COLUMNS:
         if canon not in out.columns:
             out[canon] = pd.NA
+    
+    # Treat physically-impossible zeros as missing (sentinel fill values).
+    # Seawater pH, salinity, oxygen and pCO2 are never exactly 0 in valid data.
+    ZERO_IS_MISSING = ["ph", "sss", "oxygen", "pco2"]
+    for canon in ZERO_IS_MISSING:
+        if canon in out.columns:
+            n_zero = (out[canon] == 0).sum()
+            if n_zero:
+                logger.info("%s: %s has %d zero values -> set to NaN",
+                            path.name, canon, n_zero)
+                out.loc[out[canon] == 0, canon] = pd.NA
 
     out["season"] = voyage["season"]
     out["version"] = voyage["version"]
     out["voyage"] = f"{voyage['season']}_{voyage['version']}"
-    out = out.dropna(subset=["datetime"]).sort_values("datetime")
+    out = out.dropna(subset=["datetime"])
+    # Drop implausible timestamps (e.g. source typos like year 0025).
+    # Nuyina entered service in 2021; nothing valid predates it or postdates now.
+    valid_time = (out["datetime"] >= pd.Timestamp("2021-01-01")) & \
+                 (out["datetime"] <= pd.Timestamp.now())
+    n_bad = (~valid_time).sum()
+    if n_bad:
+        logger.warning("%s: dropped %d row(s) with implausible timestamps",
+                       path.name, n_bad)
+    out = out[valid_time].sort_values("datetime")
     logger.info("%s: %d rows loaded", path.name, len(out))
     return out
 
