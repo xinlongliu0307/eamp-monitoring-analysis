@@ -22,6 +22,22 @@ VARS = {
 }
 EXTENT = [55, 165, -72, -38]
 
+# place markers + continent labels (shared across facets)
+PLACES = [("Hobart", 147.33, -42.88), ("Mawson", 62.87, -67.60),
+          ("Davis", 77.97, -68.58), ("Casey", 110.53, -66.28),
+          ("Macquarie Is.", 158.94, -54.50), ("Heard Is.", 73.50, -53.10)]
+CONTINENTS = [("AUSTRALIA", 133, -40), ("ANTARCTICA", 95, -70.5)]
+
+def add_places(ax):
+    for nm, lo, la in PLACES:
+        ax.plot(lo, la, marker="*", color="black", markersize=9,
+                transform=ccrs.PlateCarree(), zorder=7)
+        ax.annotate(nm, (lo, la), xytext=(4, 3), textcoords="offset points",
+                    transform=ccrs.PlateCarree(), fontsize=9, fontweight="bold", zorder=8)
+    for nm, lo, la in CONTINENTS:
+        ax.text(lo, la, nm, fontsize=11, fontweight="bold", color="0.45",
+                ha="center", transform=ccrs.PlateCarree(), zorder=8)
+
 def season_of(voyage):
     return voyage.split("_")[0]
 
@@ -54,17 +70,17 @@ def main():
             sc = ax.scatter(g["longitude"], g["latitude"], c=g["value"],
                             s=2, cmap=cmap, vmin=vmin, vmax=vmax,
                             transform=ccrs.PlateCarree(), zorder=3)
-            ax.set_title(season, fontsize=11, fontweight="bold")
+            ax.set_title(season, fontsize=13, fontweight="bold")
             ax.gridlines(draw_labels=False, linewidth=0.2, color="0.8", alpha=0.4)
         for ax in axes[len(seasons):]:
             ax.axis("off")
 
         cbar = fig.colorbar(sc, ax=axes.tolist(), fraction=0.025, pad=0.02,
                             orientation="vertical")
-        cbar.set_label(label, fontsize=12)
+        cbar.set_label(label, fontsize=14)
         fig.suptitle(f"RSV Nuyina underway {label} by season-year\n"
                      "Tracks coloured by value; spatial pattern is dominated by latitude",
-                     fontsize=14, y=0.98)
+                     fontsize=16, y=0.98)
         OUT.mkdir(parents=True, exist_ok=True)
         out = OUT / f"eampB_nuyina_spatial_{var}_by_season.png"
         fig.savefig(out, dpi=200, bbox_inches="tight")
