@@ -18,7 +18,7 @@ OUT = REPO / "outputs/figures/ship"
 VARS = {
     "sst_degC":      ("Sea surface temperature (\u00b0C)", "viridis", (-2, 20)),
     "sss":           ("Sea surface salinity",              "cividis", (32.5, 35.5)),
-    "air_temp_degC": ("Air temperature (\u00b0C)",          "plasma",  (-25, 25)),
+    "air_temp_degC": ("Air temperature (\u00b0C)",          "PuOr_r",  (-20, 20)),
 }
 EXTENT = [55, 165, -72, -38]
 
