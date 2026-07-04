@@ -19,18 +19,19 @@ REPO = Path("/g/data/gv90/xl1657/phd/eamp")
 PROC = REPO / "data/processed/ship"
 OUT = REPO / "outputs/figures/ship"
 
-FOCUS = [55, 165, -72, -38]          # Australia-Antarctica corridor
-FULL  = [-180, 180, -75, -30]        # whole extent (for Aurora full map)
+FOCUS = [35, 165, -72, -38]          # Australia-Antarctica corridor
+FULL  = [35, 180, -72, -28]          # Patricia crop: W of Syowa tracks to 180E, N past Perth        # whole extent (for Aurora full map)
 TOL = ["#332288","#88CCEE","#117733","#DDCC77","#CC6677","#AA4499","#44AA99",
        "#882255","#661100","#6699CC","#AA4466","#4477AA","#228833","#CCBB44"]
 
 STATIONS = [("Hobart",147.33,-42.88),("Mawson",62.87,-67.60),("Davis",77.97,-68.58),
             ("Casey",110.53,-66.28),("Macquarie Is.",158.94,-54.50),
-            ("Heard Is.",73.50,-53.10),("Dumont d'Urville",140.0,-66.66)]
+            ("Heard Is.",73.50,-53.10),("Dumont d'Urville",140.0,-66.66),
+            ("Fremantle",115.74,-32.06)]
 CONTINENTS = [("AUSTRALIA",133,-40),("ANTARCTICA",95,-70.5)]
-FEATURES = [("Amery Ice Shelf",71.0,-69.5),("Shackleton Ice Shelf",96.0,-65.0),
-            ("Totten Glacier",116.0,-67.0),("Mertz Glacier",145.0,-67.5),
-            ("West Ice Shelf",85.0,-67.0),("Ross Sea",175.0,-74.0)]
+FEATURES = [("Amery Ice Shelf",71.0,-66.5),("Shackleton Ice Shelf",96.0,-62.5),
+            ("Totten Glacier",117.0,-63.5),("Mertz Glacier",145.0,-63.5),
+            ("Ross Ice Shelf",178.0,-76.5)]
 
 def add_north_arrow(ax):
     ax.annotate("N", xy=(0.97, 0.92), xytext=(0.97, 0.83),
@@ -63,11 +64,16 @@ def base_map(ax, extent, rich=True):
     gl = ax.gridlines(draw_labels=True, linewidth=0.3, color="0.7", alpha=0.5)
     gl.top_labels = gl.right_labels = False
     gl.xlabel_style = {"size": 11}; gl.ylabel_style = {"size": 11}
+    # per-station label offsets to avoid collisions (dx,dy in points)
+    OFFSETS = {"Mawson":(-38,-2),"Davis":(6,-12),"Casey":(6,6),
+               "Dumont d'Urville":(6,-12),"Fremantle":(6,6),"Syowa Stn":(6,6),
+               "Hobart":(6,4),"Macquarie Is.":(6,2),"Heard Is.":(6,4)}
     for nm,lo,la in STATIONS:
         if extent[0] <= lo <= extent[1] and extent[2] <= la <= extent[3]:
             ax.plot(lo,la,marker="*",color="black",markersize=11,
                     transform=ccrs.PlateCarree(),zorder=7)
-            ax.annotate(nm,(lo,la),xytext=(5,4),textcoords="offset points",
+            dx,dy = OFFSETS.get(nm,(5,4))
+            ax.annotate(nm,(lo,la),xytext=(dx,dy),textcoords="offset points",
                         transform=ccrs.PlateCarree(),fontsize=11,fontweight="bold",zorder=8)
     for nm,lo,la in CONTINENTS:
         if extent[0] <= lo <= extent[1] and extent[2] <= la <= extent[3]:
@@ -76,8 +82,10 @@ def base_map(ax, extent, rich=True):
     if rich:
         for nm,lo,la in FEATURES:
             if extent[0] <= lo <= extent[1] and extent[2] <= la <= extent[3]:
-                ax.annotate(nm,(lo,la),transform=ccrs.PlateCarree(),fontsize=9,
-                            color="#225",style="italic",ha="center",zorder=8)
+                ax.annotate(nm,(lo,la),xytext=(0,10),textcoords="offset points",
+                            transform=ccrs.PlateCarree(),fontsize=8,
+                            color="#1a3a6b",style="italic",ha="center",zorder=6,
+                            bbox=dict(boxstyle="round,pad=0.1",fc="white",ec="none",alpha=0.6))
 
 def load(which):
     f = sorted(PROC.glob(f"eampB_{which}_long_*.parquet"))[-1]
@@ -144,7 +152,7 @@ def main():
     aurora = load("aurora"); nuyina = load("nuyina")
 
     print("Aurora full extent:")
-    one_map(aurora, FULL, "Aurora Australis voyage tracks (2008\u20132020) \u2014 full extent\nColoured by year", "eampB_aurora_track_full_byyear.png", rich=False)
+    one_map(aurora, FULL, "Aurora Australis voyage tracks (2008\u20132020) \u2014 East Antarctic\u2013Australian sector\nColoured by year", "eampB_aurora_track_full_byyear.png", rich=True)
     print("Aurora focus:")
     one_map(aurora, FOCUS, "Aurora Australis voyage tracks (2008\u20132020)\nAustralia\u2013Antarctica; coloured by year", "eampB_aurora_track_focus_byyear.png")
     print("Nuyina focus (voyage legend):")
