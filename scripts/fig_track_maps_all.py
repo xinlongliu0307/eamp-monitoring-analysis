@@ -27,7 +27,8 @@ TOL = ["#332288","#88CCEE","#117733","#DDCC77","#CC6677","#AA4499","#44AA99",
 STATIONS = [("Hobart",147.33,-42.88),("Mawson",62.87,-67.60),("Davis",77.97,-68.58),
             ("Casey",110.53,-66.28),("Macquarie Is.",158.94,-54.50),
             ("Heard Is.",73.50,-53.10),("Dumont d'Urville",140.0,-66.66),
-            ("Fremantle",115.74,-32.06)]
+            ("Fremantle",115.74,-32.06),
+            ("Syowa Stn",39.59,-69.01)]
 CONTINENTS = [("AUSTRALIA",133,-40),("ANTARCTICA",95,-70.5)]
 FEATURES = [("Amery Ice Shelf",71.0,-66.5),("Shackleton Ice Shelf",96.0,-62.5),
             ("Totten Glacier",117.0,-63.5),("Mertz Glacier",145.0,-63.5),
@@ -130,6 +131,7 @@ def one_map_voyages(df, extent, title, outname, rich=True):
     ax.set_title(title, fontsize=15)
     OUT.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT/outname, dpi=200, bbox_inches="tight")
+    fig.savefig(OUT/outname.replace(".png",".pdf"), bbox_inches="tight")  # vector PDF
     print(f"  Saved: {outname}"); plt.close(fig)
 
 def one_map(df, extent, title, outname, rich=True):
@@ -146,6 +148,7 @@ def one_map(df, extent, title, outname, rich=True):
     ax.set_title(title, fontsize=15)
     OUT.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT/outname, dpi=200, bbox_inches="tight")
+    fig.savefig(OUT/outname.replace(".png",".pdf"), bbox_inches="tight")  # vector PDF
     print(f"  Saved: {outname}"); plt.close(fig)
 
 def main():
@@ -177,6 +180,7 @@ def main():
               fontsize=11, title="Vessel", title_fontsize=12)
     ax.set_title("Aurora Australis + RSV Nuyina voyage tracks\nAustralia\u2013Antarctica; one colour per vessel", fontsize=15)
     fig.savefig(OUT/"eampB_combined_track_byvessel.png", dpi=200, bbox_inches="tight")
+    fig.savefig(OUT/"eampB_combined_track_byvessel.pdf", bbox_inches="tight")  # vector PDF for manual editing
     print("  Saved: eampB_combined_track_byvessel.png"); plt.close(fig)
 
     # combined map, full circumpolar extent (same boundaries as Aurora full map)
@@ -197,6 +201,7 @@ def main():
               fontsize=11, title="Vessel", title_fontsize=12)
     ax.set_title("Aurora Australis + RSV Nuyina voyage tracks\nFull circumpolar extent; one colour per vessel", fontsize=15)
     fig.savefig(OUT/"eampB_combined_track_full_byvessel.png", dpi=200, bbox_inches="tight")
+    fig.savefig(OUT/"eampB_combined_track_full_byvessel.pdf", bbox_inches="tight")  # vector PDF for manual editing
     print("  Saved: eampB_combined_track_full_byvessel.png"); plt.close(fig)
 
 if __name__ == "__main__":
