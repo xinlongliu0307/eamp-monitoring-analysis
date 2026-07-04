@@ -19,6 +19,14 @@ REPO = Path("/g/data/gv90/xl1657/phd/eamp")
 PROC = REPO / "data/processed/ship"
 OUT = REPO / "outputs/figures/ship"
 
+def save_fig(fig, name):
+    """Save a figure as both PNG (raster, 200 dpi) and PDF (vector) in OUT.
+    `name` is the base filename without extension."""
+    OUT.mkdir(parents=True, exist_ok=True)
+    fig.savefig(OUT / f"{name}.png", dpi=200, bbox_inches="tight")
+    fig.savefig(OUT / f"{name}.pdf", bbox_inches="tight")
+    print(f"  Saved: {name}.png + {name}.pdf")
+
 FOCUS = [35, 165, -72, -38]          # Australia-Antarctica corridor
 FULL  = [35, 180, -72, -28]          # Patricia crop: W of Syowa tracks to 180E, N past Perth        # whole extent (for Aurora full map)
 TOL = ["#332288","#88CCEE","#117733","#DDCC77","#CC6677","#AA4499","#44AA99",
@@ -130,9 +138,8 @@ def one_map_voyages(df, extent, title, outname, rich=True):
             bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="0.7", alpha=0.85))
     ax.set_title(title, fontsize=15)
     OUT.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT/outname, dpi=200, bbox_inches="tight")
-    fig.savefig(OUT/outname.replace(".png",".pdf"), bbox_inches="tight")  # vector PDF
-    print(f"  Saved: {outname}"); plt.close(fig)
+    save_fig(fig, outname.replace(".png",""))
+    plt.close(fig)
 
 def one_map(df, extent, title, outname, rich=True):
     fig = plt.figure(figsize=(15,11))
@@ -147,9 +154,8 @@ def one_map(df, extent, title, outname, rich=True):
             bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="0.7", alpha=0.85))
     ax.set_title(title, fontsize=15)
     OUT.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT/outname, dpi=200, bbox_inches="tight")
-    fig.savefig(OUT/outname.replace(".png",".pdf"), bbox_inches="tight")  # vector PDF
-    print(f"  Saved: {outname}"); plt.close(fig)
+    save_fig(fig, outname.replace(".png",""))
+    plt.close(fig)
 
 def main():
     aurora = load("aurora"); nuyina = load("nuyina")
@@ -179,8 +185,7 @@ def main():
     ax.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.14,1.0),
               fontsize=11, title="Vessel", title_fontsize=12)
     ax.set_title("Aurora Australis + RSV Nuyina voyage tracks\nAustralia\u2013Antarctica; one colour per vessel", fontsize=15)
-    fig.savefig(OUT/"eampB_combined_track_byvessel.png", dpi=200, bbox_inches="tight")
-    fig.savefig(OUT/"eampB_combined_track_byvessel.pdf", bbox_inches="tight")  # vector PDF for manual editing
+    save_fig(fig, "eampB_combined_track_byvessel")
     print("  Saved: eampB_combined_track_byvessel.png"); plt.close(fig)
 
     # combined map, full circumpolar extent (same boundaries as Aurora full map)
@@ -200,8 +205,7 @@ def main():
     ax.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.14,1.0),
               fontsize=11, title="Vessel", title_fontsize=12)
     ax.set_title("Aurora Australis + RSV Nuyina voyage tracks\nFull circumpolar extent; one colour per vessel", fontsize=15)
-    fig.savefig(OUT/"eampB_combined_track_full_byvessel.png", dpi=200, bbox_inches="tight")
-    fig.savefig(OUT/"eampB_combined_track_full_byvessel.pdf", bbox_inches="tight")  # vector PDF for manual editing
+    save_fig(fig, "eampB_combined_track_full_byvessel")
     print("  Saved: eampB_combined_track_full_byvessel.png"); plt.close(fig)
 
 if __name__ == "__main__":
