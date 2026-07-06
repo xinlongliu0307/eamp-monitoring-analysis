@@ -36,7 +36,7 @@ STATIONS = [("Hobart",147.33,-42.88),("Mawson",62.87,-67.60),("Davis",77.97,-68.
             ("Casey",110.53,-66.28),("Macquarie Is.",158.94,-54.50),
             ("Heard Is.",73.50,-53.10),("Dumont d'Urville",140.0,-66.66),
             ("Fremantle",115.74,-32.06),
-            ("Syowa Stn",39.59,-69.01)]
+            ("Syowa",39.59,-69.01)]
 CONTINENTS = [("AUSTRALIA",133,-40),("ANTARCTICA",95,-70.5)]
 FEATURES = [("Amery Ice Shelf",71.0,-66.5),("Shackleton Ice Shelf",96.0,-62.5),
             ("Totten Glacier",117.0,-63.5),("Mertz Glacier",145.0,-63.5),
@@ -75,7 +75,7 @@ def base_map(ax, extent, rich=True):
     gl.xlabel_style = {"size": 11}; gl.ylabel_style = {"size": 11}
     # per-station label offsets to avoid collisions (dx,dy in points)
     OFFSETS = {"Mawson":(-38,-2),"Davis":(6,-12),"Casey":(6,6),
-               "Dumont d'Urville":(6,-12),"Fremantle":(6,6),"Syowa Stn":(6,6),
+               "Dumont d'Urville":(6,-12),"Fremantle":(6,6),"Syowa":(6,6),
                "Hobart":(6,4),"Macquarie Is.":(6,2),"Heard Is.":(6,4)}
     for nm,lo,la in STATIONS:
         if extent[0] <= lo <= extent[1] and extent[2] <= la <= extent[3]:
