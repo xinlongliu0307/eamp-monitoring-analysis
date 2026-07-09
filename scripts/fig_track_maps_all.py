@@ -19,13 +19,18 @@ REPO = Path("/g/data/gv90/xl1657/phd/eamp")
 PROC = REPO / "data/processed/ship"
 OUT = REPO / "outputs/figures/ship"
 
+import os
+SHOW_TITLES = os.environ.get("SHOW_TITLES","1") == "1"
+SUFFIX = "" if SHOW_TITLES else "_notitle"
+
 def save_fig(fig, name):
     """Save a figure as both PNG (raster, 200 dpi) and PDF (vector) in OUT.
-    `name` is the base filename without extension."""
+    Appends SUFFIX (empty, or _notitle) so titled/titleless versions coexist."""
     OUT.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT / f"{name}.png", dpi=200, bbox_inches="tight")
-    fig.savefig(OUT / f"{name}.pdf", bbox_inches="tight")
-    print(f"  Saved: {name}.png + {name}.pdf")
+    nm = f"{name}{SUFFIX}"
+    fig.savefig(OUT / f"{nm}.png", dpi=200, bbox_inches="tight")
+    fig.savefig(OUT / f"{nm}.pdf", bbox_inches="tight")
+    print(f"  Saved: {nm}.png + {nm}.pdf")
 
 FOCUS = [35, 165, -72, -38]          # Australia-Antarctica corridor
 FULL  = [35, 180, -72, -28]          # Patricia crop: W of Syowa tracks to 180E, N past Perth        # whole extent (for Aurora full map)
@@ -36,7 +41,8 @@ STATIONS = [("Hobart",147.33,-42.88),("Mawson",62.87,-67.60),("Davis",77.97,-68.
             ("Casey",110.53,-66.28),("Macquarie Is.",158.94,-54.50),
             ("Heard Is.",73.50,-53.10),("Dumont d'Urville",140.0,-66.66),
             ("Fremantle",115.74,-32.06),
-            ("Syowa",39.59,-69.01)]
+            ("Syowa",39.59,-69.01),
+            ("Burnie",145.90,-41.05)]
 CONTINENTS = [("AUSTRALIA",133,-40),("ANTARCTICA",95,-70.5)]
 FEATURES = [("Amery Ice Shelf",71.0,-66.5),("Shackleton Ice Shelf",96.0,-62.5),
             ("Totten Glacier",117.0,-63.5),("Mertz Glacier",145.0,-63.5),
@@ -136,7 +142,7 @@ def one_map_voyages(df, extent, title, outname, rich=True):
     ax.text(0.02, 0.04, f"{df['voyage'].nunique()} voyages", transform=ax.transAxes,
             fontsize=10, style="italic", color="0.3",
             bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="0.7", alpha=0.85))
-    ax.set_title(title, fontsize=15)
+    if SHOW_TITLES: ax.set_title(title, fontsize=15)
     OUT.mkdir(parents=True, exist_ok=True)
     save_fig(fig, outname.replace(".png",""))
     plt.close(fig)
@@ -152,7 +158,7 @@ def one_map(df, extent, title, outname, rich=True):
     ax.text(0.02, 0.04, f"{df['voyage'].nunique()} voyages", transform=ax.transAxes,
             fontsize=10, style="italic", color="0.3",
             bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="0.7", alpha=0.85))
-    ax.set_title(title, fontsize=15)
+    if SHOW_TITLES: ax.set_title(title, fontsize=15)
     OUT.mkdir(parents=True, exist_ok=True)
     save_fig(fig, outname.replace(".png",""))
     plt.close(fig)
@@ -161,11 +167,11 @@ def main():
     aurora = load("aurora"); nuyina = load("nuyina")
 
     print("Aurora full extent:")
-    one_map(aurora, FULL, "Aurora Australis voyage tracks (2008\u20132020) \u2014 East Antarctic\u2013Australian sector\nColoured by year", "eampB_aurora_track_full_byyear.png", rich=True)
+    one_map(aurora, FULL, "Aurora Australis voyage tracks (2008\u20132020)\nAustralia\u2013Antarctica", "eampB_aurora_track_full_byyear.png", rich=True)
     print("Aurora focus:")
-    one_map(aurora, FOCUS, "Aurora Australis voyage tracks (2008\u20132020)\nAustralia\u2013Antarctica; coloured by year", "eampB_aurora_track_focus_byyear.png")
+    one_map(aurora, FOCUS, "Aurora Australis voyage tracks (2008\u20132020)\nAustralia\u2013Antarctica", "eampB_aurora_track_focus_byyear.png")
     print("Nuyina focus (voyage legend):")
-    one_map_voyages(nuyina, FOCUS, "RSV Nuyina voyage tracks (2021\u20132025)\nAustralia\u2013Antarctica; coloured by year, labelled by voyage", "eampB_nuyina_track_focus_byyear.png")
+    one_map_voyages(nuyina, FOCUS, "RSV Nuyina voyage tracks (2021\u20132026)\nAustralia\u2013Antarctica", "eampB_nuyina_track_focus_byyear.png")
 
     # combined: one colour per vessel
     print("Combined (by vessel):")
@@ -173,7 +179,7 @@ def main():
     ax = plt.axes(projection=ccrs.PlateCarree())
     base_map(ax, FOCUS, rich=True)
     for df, col, name in [(aurora,"#CC6677","Aurora Australis (2008\u201320)"),
-                          (nuyina,"#332288","RSV Nuyina (2021\u201325)")]:
+                          (nuyina,"#332288","RSV Nuyina (2021\u201326)")]:
         for (voyage,yr), g in df.groupby(["voyage","year"]):
             lon,lat = g["longitude"].to_numpy(float), g["latitude"].to_numpy(float)
             brk = np.where(np.hypot(np.diff(lon),np.diff(lat))>2.0)[0]
@@ -181,10 +187,10 @@ def main():
             ax.plot(lon,lat,color=col,linewidth=0.7,alpha=0.6,
                     transform=ccrs.PlateCarree(),zorder=5)
     handles = [Line2D([0],[0],color="#CC6677",lw=2.5,label="Aurora Australis (2008\u201320)"),
-               Line2D([0],[0],color="#332288",lw=2.5,label="RSV Nuyina (2021\u201325)")]
+               Line2D([0],[0],color="#332288",lw=2.5,label="RSV Nuyina (2021\u201326)")]
     ax.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.14,1.0),
               fontsize=11, title="Vessel", title_fontsize=12)
-    ax.set_title("Aurora Australis + RSV Nuyina voyage tracks\nAustralia\u2013Antarctica; one colour per vessel", fontsize=15)
+    if SHOW_TITLES: ax.set_title("Aurora Australis + RSV Nuyina voyage tracks\nAustralia\u2013Antarctica", fontsize=15)
     save_fig(fig, "eampB_combined_track_byvessel")
     print("  Saved: eampB_combined_track_byvessel.png"); plt.close(fig)
 
@@ -201,10 +207,10 @@ def main():
             ax.plot(lon,lat,color=col,linewidth=0.7,alpha=0.6,
                     transform=ccrs.PlateCarree(),zorder=5)
     handles = [Line2D([0],[0],color="#CC6677",lw=2.5,label="Aurora Australis (2008\u201320)"),
-               Line2D([0],[0],color="#332288",lw=2.5,label="RSV Nuyina (2021\u201325)")]
+               Line2D([0],[0],color="#332288",lw=2.5,label="RSV Nuyina (2021\u201326)")]
     ax.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.14,1.0),
               fontsize=11, title="Vessel", title_fontsize=12)
-    ax.set_title("Aurora Australis + RSV Nuyina voyage tracks\nFull circumpolar extent; one colour per vessel", fontsize=15)
+    if SHOW_TITLES: ax.set_title("Aurora Australis + RSV Nuyina voyage tracks (2008-2026)\nAustralia\u2013Antarctica", fontsize=15)
     save_fig(fig, "eampB_combined_track_full_byvessel")
     print("  Saved: eampB_combined_track_full_byvessel.png"); plt.close(fig)
 
