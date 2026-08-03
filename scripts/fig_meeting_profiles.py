@@ -1,6 +1,6 @@
 """Latitude profiles for SST and air temperature across three datasets:
 Aurora (AADC 1990-2020), Nuyina (V8-corrected), and the combined record.
-Self-contained. Six figures, PNG + vector PDF, explicitly named."""
+One line per voyage, coloured by departure year. Six figures, PNG + PDF."""
 from pathlib import Path
 import re, glob
 import numpy as np, pandas as pd
@@ -12,18 +12,16 @@ PROC = REPO/"data/processed/ship"
 DSET = REPO/"outputs/datasets_for_aadc"
 OUT  = REPO/"outputs/figures/ship"
 
-# variable -> (axis label, phrase for title, filename tag, plausible range)
 VARSPEC = {
     "sst_degC":      ("Sea surface temperature (\u00b0C)",
                       "sea surface temperature", "sst",     (-2.5, 25)),
     "air_temp_degC": ("Air temperature (\u00b0C)",
                       "air temperature",         "airtemp", (-25, 32)),
 }
-# dataset key -> (title stub, filename tag, show changeover note)
 DATASPEC = {
-    "aurora":   ("Aurora Australis",                 "aurora_1990-2020",   False),
-    "nuyina":   ("RSV Nuyina",                       "nuyina_2021-2026",   False),
-    "combined": ("Aurora Australis + RSV Nuyina",    "combined_1990-2026", True),
+    "aurora":   ("Aurora Australis",              "aurora_1990-2020",   False),
+    "nuyina":   ("RSV Nuyina",                    "nuyina_2021-2026",   False),
+    "combined": ("Aurora Australis + RSV Nuyina", "combined_1990-2026", True),
 }
 GAP_NOTE = ("Note: ~21-month gap (Mar 2020 \u2013 Dec 2021) during vessel changeover;\n"
             "the two vessels are different instruments and do not overlap in time.")
@@ -53,42 +51,47 @@ def load():
     cols = ["vessel","voyage","datetime","latitude","longitude","variable","value"]
     a, n = a[cols].copy(), n[cols].copy()
     for d in (a, n): d["datetime"] = pd.to_datetime(d["datetime"])
-    return {"aurora": a, "nuyina": n,
-            "combined": pd.concat([a, n], ignore_index=True)}
+    return {"aurora": a, "nuyina": n, "combined": pd.concat([a,n], ignore_index=True)}
 
 def profile(df, var, dkey):
     ylabel, phrase, vtag, (vmin, vmax) = VARSPEC[var]
     stub, dtag, gap = DATASPEC[dkey]
-    name = f"MEET_{dtag}_{vtag}_latitude"          # dataset tag + variable tag
+    name = f"MEET_{dtag}_{vtag}_latitude"
 
     s = df[df.variable == var].dropna(subset=["latitude","value"]).copy()
     if s.empty:
         print(f"    {name}: no {var} data, skipped"); return
     s = s[s.latitude.between(-72,-28) & s.value.between(vmin, vmax)]
-    s["year"] = s.datetime.dt.year
+    # colour by DEPARTURE year so a voyage crossing 1 Jan is one line, one colour
+    s["season_year"] = s.groupby("voyage").datetime.transform("min").dt.year
     s["lat_bin"] = np.floor(s.latitude/0.5)*0.5 + 0.25
-    s["vlabel"] = s.voyage.map(fmt_voyage)
-    years = sorted(s.year.unique()); y0, y1 = min(years), max(years)
+    years = sorted(s.season_year.unique()); y0, y1 = min(years), max(years)
     norm = plt.Normalize(y0, y1)
 
-    fig, ax = plt.subplots(figsize=(13,8)); drawn = 0
-    for (v, y), g in s.groupby(["vlabel","year"]):
+    fig, ax = plt.subplots(figsize=(13,8))
+    plotted = []
+    for v, g in s.groupby("voyage"):
         p = g.groupby("lat_bin").value.mean().sort_index()
         if len(p) > 3:
-            ax.plot(p.index, p.values, color=plt.cm.viridis(norm(y)),
-                    lw=0.85, alpha=0.72); drawn += 1
+            ax.plot(p.index, p.values,
+                    color=plt.cm.viridis(norm(g.season_year.iloc[0])),
+                    lw=0.85, alpha=0.72)
+            plotted.append(v)
     ax.set_xlabel("Latitude (\u00b0)", fontsize=13)
     ax.set_ylabel(ylabel, fontsize=13)
     ax.invert_xaxis(); ax.grid(alpha=0.3)
     plt.colorbar(plt.cm.ScalarMappable(cmap="viridis", norm=norm), ax=ax, label="Year")
+    nobs = len(s[s.voyage.isin(plotted)])
     ax.set_title(f"{stub} {phrase} vs latitude, by voyage\n"
-                 f"{y0}\u2013{y1}  \u00b7  {s.voyage.nunique()} voyages ({drawn} lines)  \u00b7  "
-                 f"{len(s):,} observations", fontsize=14)
+                 f"{y0}\u2013{y1}  \u00b7  {len(plotted)} voyages  \u00b7  {nobs:,} observations",
+                 fontsize=14)
     notes = ([GAP_NOTE] if gap else []) + ([AIR_NOTE] if var=="air_temp_degC" else [])
     if notes:
         ax.text(0.99, 0.02, "\n".join(notes), transform=ax.transAxes,
                 ha="right", va="bottom", fontsize=8, style="italic", color="0.35")
-    print(f"    {stub} | {phrase} | {len(s):,} obs, {drawn} lines")
+    skipped = sorted(set(s.voyage.unique()) - set(plotted))
+    print(f"    {stub} | {phrase} | {len(plotted)} voyages, {nobs:,} obs"
+          + (f" | too few lat bins: {skipped}" if skipped else ""))
     save_fig(fig, name); plt.close(fig)
 
 def main():
