@@ -39,3 +39,12 @@ Thumbs.db
 # Local conda installation (environment-specific, not version controlled)
 .conda/
 activate_eamp.sh
+
+# editor/script backups
+*.bak
+*.bak[0-9]*
+# output folders containing data products
+outputs/datasets_for_aadc/**
+outputs/aadc_handover/**
+outputs/penguin_share/**
+outputs/analysis_code_for_patricia/**
