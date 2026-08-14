@@ -46,7 +46,7 @@ def load():
     nf = sorted(glob.glob(str(DSET/"EAMP_Nuyina_underway_*.parquet")))[-1]
     n = pd.read_parquet(nf); print(f"Nuyina source: {Path(nf).name}")
     if "vessel" not in n: n["vessel"] = "RSV Nuyina"
-    bad = n.voyage.astype(str).str.contains("V8") & (n.variable == "sst_degC")
+    bad = (n.voyage.astype(str) == "2022-23_V8") & (n.variable == "sst_degC")
     if bad.any(): n = n[~bad]; print(f"  excluded {bad.sum():,} faulty V8 SST rows")
     cols = ["vessel","voyage","datetime","latitude","longitude","variable","value"]
     a, n = a[cols].copy(), n[cols].copy()

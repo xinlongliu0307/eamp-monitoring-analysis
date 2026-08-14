@@ -35,7 +35,7 @@ def load(which):
     # (2) A generous latitude-dependent band as a backstop for any other
     #     grossly-implausible warm values.
     is_sst = df["variable"] == "sst_degC"
-    v8_sst = is_sst & df["voyage"].astype(str).str.contains("V8")
+    v8_sst = is_sst & (df["voyage"].astype(str) == "2022-23_V8")
     df = df[~v8_sst]
     is_sst = df["variable"] == "sst_degC"   # recompute after the drop
     max_ok = 0.636 * df["latitude"] + 51.35

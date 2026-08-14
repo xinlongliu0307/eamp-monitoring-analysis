@@ -19,7 +19,7 @@ def load():
     nf = sorted(glob.glob(str(DSET/"EAMP_Nuyina_underway_*.parquet")))[-1]
     n = pd.read_parquet(nf, columns=cols); n["vessel"] = "RSV Nuyina"
     print(f"Nuyina source: {Path(nf).name}")
-    bad = n.voyage.astype(str).str.contains("V8") & (n.variable=="sst_degC")
+    bad = (n.voyage.astype(str) == "2022-23_V8") & (n.variable=="sst_degC")
     if bad.any(): n = n[~bad]; print(f"  excluded {bad.sum():,} faulty V8 SST rows")
     df = pd.concat([a,n], ignore_index=True)
     df["datetime"] = pd.to_datetime(df["datetime"])
