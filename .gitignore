@@ -48,3 +48,6 @@ outputs/datasets_for_aadc/**
 outputs/aadc_handover/**
 outputs/penguin_share/**
 outputs/analysis_code_for_patricia/**
+
+# AAS 4564 emperor colony data (unpublished AAD data; never commit)
+aas4564_emperor/data/
