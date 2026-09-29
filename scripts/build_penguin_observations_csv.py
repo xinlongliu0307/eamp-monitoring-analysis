@@ -9,7 +9,7 @@ variable, in the column order Julie specified:
     open_water_distance_km, comments
 
 followed by provenance / QC columns (site_id, has_position,
-km_from_previous_orig, surface_orig, open_water_distance_orig, qc_flag,
+km_from_previous_orig, surface_code, surface_orig, open_water_distance_orig, qc_flag,
 source_sheet, source_row).
 
 Relationship to run_penguin_ingestion.py: that pipeline consolidates the v1
@@ -45,6 +45,8 @@ import pandas as pd  # noqa: E402
 
 from eamp.common import config  # noqa: E402
 from eamp.common.logging import get_logger  # noqa: E402
+from eamp.penguin.harmonise import (  # noqa: E402
+    is_known_surface_type, parse_surface_type, surface_label)
 
 logger = get_logger("build_penguin_observations_csv")
 
@@ -82,21 +84,9 @@ COORD_FIXES = {
 # Positions > this distance from the colony's median position are flagged (not changed).
 OUTLIER_KM = 25.0
 
-SURFACE_MAP = {
-    "fast ice": "fast ice", "fastice": "fast ice", "fasr ice": "fast ice",
-    "iceberg": "iceberg", "ice berg": "iceberg", "berg": "iceberg", "sm iceberg": "iceberg",
-    "land": "land", "land ice": "land ice", "land/ice": "land/ice",
-    "rock": "rock", "rock/ice": "rock/ice", "ice slope": "ice slope",
-    "glacier ice": "glacier ice", "on glacier ice": "glacier ice",
-    "floe": "floe", "ice floe": "floe", "large floe": "floe",
-    "iceberg/fastice": "iceberg/fast ice", "iceberg/fast ice": "iceberg/fast ice",
-    "fast ice/iceberg": "iceberg/fast ice",
-    "thin ice": "thin ice", "new ice": "new ice", "ice": "ice", "ice ramp?": "ice ramp",
-}
-
 OUT_COLS = ["site", "colony", "date", "year", "lat", "long", "km_from_previous",
             "surface", "open_water_distance_km", "comments",
-            "site_id", "has_position", "km_from_previous_orig", "surface_orig",
+            "site_id", "has_position", "km_from_previous_orig", "surface_code", "surface_orig",
             "open_water_distance_orig", "qc_flag", "source_sheet", "source_row"]
 
 
@@ -127,10 +117,11 @@ def to_num(v):
 
 
 def std_surface(v):
-    if v is None or str(v).strip() == "":
-        return None
-    key = re.sub(r"\s+", " ", str(v)).strip().lower()
-    return SURFACE_MAP.get(key, key)
+    """Return (readable label, snake_case code) from the shared vocabulary in
+    src/eamp/penguin/harmonise.py, so this export and the ingestion pipeline
+    use the same categories."""
+    code = parse_surface_type(v)
+    return surface_label(code), code
 
 
 def block_columns(header, start, width):
@@ -238,16 +229,20 @@ def combine(xlsx_path):
                 prev_date = date
 
                 surf_raw = r[cols["surface"]] if "surface" in cols else None
+                surf_label, surf_code = std_surface(surf_raw)
+                if not is_known_surface_type(surf_raw):
+                    flags.append(f"surface '{surf_raw}' not in controlled vocabulary")
                 comm = r[cols["comments"]] if "comments" in cols else None
 
                 rec = {
                     "site": site, "colony": colony, "date": date.date().isoformat(),
                     "year": date.year, "lat": lat, "long": lon,
-                    "km_from_previous": km_prev, "surface": std_surface(surf_raw),
+                    "km_from_previous": km_prev, "surface": surf_label,
                     "open_water_distance_km": owd,
                     "comments": (str(comm).strip() if comm is not None else None),
                     "site_id": site_id, "has_position": has_pos,
                     "km_from_previous_orig": kmprev_orig,
+                    "surface_code": surf_code,
                     "surface_orig": surf_raw,
                     "open_water_distance_orig": owd_raw,
                     "qc_flag": "; ".join(flags) if flags else None,

@@ -3,9 +3,12 @@ import pandas as pd
 import pytest
 
 from eamp.penguin.harmonise import (
+    SURFACE_TYPE_CODES,
     harmonise_columns,
+    is_known_surface_type,
     parse_colony_name,
     parse_surface_type,
+    surface_label,
 )
 
 
@@ -48,6 +51,46 @@ class TestParseSurfaceType:
 
     def test_unknown_passes_through_lowercased(self):
         assert parse_surface_type("Unknown surface") == "unknown surface"
+
+    def test_whitespace_and_typo_variants(self):
+        assert parse_surface_type(" fast  ice") == "fast_ice"
+        assert parse_surface_type("fasr ice") == "fast_ice"
+        assert parse_surface_type(" ice berg") == "iceberg"
+
+    def test_floe_variants(self):
+        for raw in ["floe", "ice floe", "large floe"]:
+            assert parse_surface_type(raw) == "ice_floe"
+
+    def test_compound_order_independent(self):
+        assert parse_surface_type("fast ice/iceberg") == "iceberg_and_fast_ice"
+        assert parse_surface_type("iceberg/fastice") == "iceberg_and_fast_ice"
+
+    def test_distinct_categories_not_merged(self):
+        assert parse_surface_type("land ice") != parse_surface_type("land/ice")
+        assert parse_surface_type("rock") != parse_surface_type("rock/ice")
+
+    def test_blank_returns_none(self):
+        assert parse_surface_type("  ") is None
+
+    def test_known_flag(self):
+        assert is_known_surface_type("Fast ice")
+        assert is_known_surface_type(None)
+        assert not is_known_surface_type("Unknown surface")
+
+
+class TestSurfaceLabel:
+    def test_simple(self):
+        assert surface_label("fast_ice") == "fast ice"
+
+    def test_compound(self):
+        assert surface_label("iceberg_and_fast_ice") == "iceberg/fast ice"
+
+    def test_none(self):
+        assert surface_label(None) is None
+
+    def test_labels_round_trip(self):
+        for code in SURFACE_TYPE_CODES:
+            assert parse_surface_type(surface_label(code)) == code, code
 
 
 class TestHarmoniseColumns:

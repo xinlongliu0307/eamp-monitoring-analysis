@@ -78,9 +78,10 @@ absolute difference is 0.004 km over 178 comparable rows; 7 rows differ by more
 than 0.2 km.
 
 `surface` is lightly standardised (whitespace, case, spelling variants) with
-the original kept in `surface_orig`. The vocabulary is human-readable
-("fast ice") for Julie's use and differs from the snake_case categories in
-`src/eamp/penguin/harmonise.py`; the two should be reconciled.
+the original kept in `surface_orig`. It is the readable form ("fast ice") of
+the snake_case `surface_code` from `src/eamp/penguin/harmonise.py`, so this
+export and the ingestion pipeline share one vocabulary (see
+2026-09-29-surface-vocabulary.md).
 
 `open_water_distance_km` is parsed where unambiguous ("12. 6" to 12.6,
 "1 km" to 1); "?" and ranges such as "25-30" become NA, with the original text
@@ -101,5 +102,6 @@ kept in `open_water_distance_orig`.
 
 1. Julie to review the flagged items and the corrections above.
 2. Match site names to the 71-colony habitat dataset so the two can be joined.
-3. Reconcile surface vocabulary with `harmonise.py`.
+3. Reconcile surface vocabulary with `harmonise.py` (done 2026-09-29, see
+   2026-09-29-surface-vocabulary.md).
 4. Once Julie confirms, tag the commit that produced the delivered CSV.
