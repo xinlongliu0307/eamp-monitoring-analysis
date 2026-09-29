@@ -14,7 +14,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
 REPO = Path("/g/data/gv90/xl1657/phd/eamp")
-SRC = REPO / "data/raw/penguin/Emperor_colony_locations_2025_habitat_20260603.xlsx"
+SRC = REPO / "data/raw/penguin/Emperor_colony_locations_2025_habitat_20260622.xlsx"
 OUT = REPO / "outputs/figures/penguin"
 
 # Barb's exact habitat label strings -> colours.

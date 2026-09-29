@@ -23,7 +23,7 @@ except Exception:
     HAVE_ADJUST = False
 
 REPO = Path("/g/data/gv90/xl1657/phd/eamp")
-SRC = REPO / "data/raw/penguin/Emperor_colony_locations_2025_habitat_20260603.xlsx"
+SRC = REPO / "data/raw/penguin/Emperor_colony_locations_2025_habitat_20260622.xlsx"
 OUT = REPO / "outputs/figures/penguin"
 
 HABITAT_COLOURS = {
